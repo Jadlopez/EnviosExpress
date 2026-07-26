@@ -30,6 +30,13 @@ public class Conductor {
     @Column(nullable = false)
     private String telefono;
 
+    /**
+     * Correo del usuario (tabla usuarios) con el que este conductor inicia sesion.
+     * Enlaza la ficha operativa (Conductor) con la cuenta de autenticacion (Usuario).
+     */
+    @Column(unique = true)
+    private String email;
+
     @Column(nullable = false)
     private boolean disponible = true;
 }

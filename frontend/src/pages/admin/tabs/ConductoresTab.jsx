@@ -5,7 +5,7 @@ import apiClient from '../../../api/client';
 export default function ConductoresTab() {
   const [conductores, setConductores] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [nuevoConductor, setNuevoConductor] = useState({ nombre: '', documento: '', telefono: '' });
+  const [nuevoConductor, setNuevoConductor] = useState({ nombre: '', documento: '', telefono: '', email: '' });
 
   useEffect(() => {
     fetchConductores();
@@ -27,7 +27,7 @@ export default function ConductoresTab() {
     e.preventDefault();
     try {
       await apiClient.post('/conductores', nuevoConductor);
-      setNuevoConductor({ nombre: '', documento: '', telefono: '' });
+      setNuevoConductor({ nombre: '', documento: '', telefono: '', email: '' });
       fetchConductores();
       alert('Conductor registrado exitosamente.');
     } catch (err) {
@@ -77,6 +77,17 @@ export default function ConductoresTab() {
             className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
           />
         </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 mb-1">Correo (cuenta de acceso)</label>
+          <input
+            type="email"
+            required
+            placeholder="conductor@enviosexpress.com"
+            value={nuevoConductor.email}
+            onChange={(e) => setNuevoConductor({...nuevoConductor, email: e.target.value})}
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+          />
+        </div>
         <button
           type="submit"
           className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-sm transition-colors flex items-center justify-center space-x-1"
@@ -99,7 +110,7 @@ export default function ConductoresTab() {
               <div key={idx} className="p-4 flex justify-between items-center text-sm">
                 <div>
                   <span className="font-bold text-blue-400">{c.nombre}</span>
-                  <p className="text-slate-300 text-xs mt-0.5">Documento: {c.documento}</p>
+                  <p className="text-slate-300 text-xs mt-0.5">Documento: {c.documento} — {c.email}</p>
                 </div>
                 <span className="text-xs text-slate-400">Tel: {c.telefono}</span>
               </div>

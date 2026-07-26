@@ -24,11 +24,15 @@ public class ConductorService {
         if (conductorRepository.existsByDocumento(request.documento())) {
             throw new ApiException(HttpStatus.CONFLICT, "El documento ya está registrado.");
         }
+        if (conductorRepository.existsByEmail(request.email())) {
+            throw new ApiException(HttpStatus.CONFLICT, "Ese correo ya está vinculado a otro conductor.");
+        }
 
         Conductor conductor = new Conductor();
         conductor.setNombre(request.nombre());
         conductor.setDocumento(request.documento());
         conductor.setTelefono(request.telefono());
+        conductor.setEmail(request.email());
 
         return ConductorResponse.from(conductorRepository.save(conductor));
     }

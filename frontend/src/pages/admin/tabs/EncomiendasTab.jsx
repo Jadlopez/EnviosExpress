@@ -4,11 +4,14 @@ import apiClient from '../../../api/client';
 
 export default function EncomiendasTab() {
   const [encomiendas, setEncomiendas] = useState([]);
+  const [conductores, setConductores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [nuevaEncomienda, setNuevaEncomienda] = useState({ codigoGuia: '', nombreDestinatario: '', direccionDestino: '' });
+  const [asignaciones, setAsignaciones] = useState({});
 
   useEffect(() => {
     fetchEncomiendas();
+    fetchConductores();
   }, []);
 
   const fetchEncomiendas = async () => {
@@ -23,6 +26,15 @@ export default function EncomiendasTab() {
     }
   };
 
+  const fetchConductores = async () => {
+    try {
+      const res = await apiClient.get('/conductores');
+      setConductores(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleCreateEncomienda = async (e) => {
     e.preventDefault();
     try {
@@ -33,6 +45,22 @@ export default function EncomiendasTab() {
     } catch (err) {
       console.error(err);
       alert('Error al registrar la encomienda.');
+    }
+  };
+
+  const handleAsignarConductor = async (encomiendaId) => {
+    const conductorId = asignaciones[encomiendaId];
+    if (!conductorId) {
+      alert('Selecciona un conductor antes de asignar.');
+      return;
+    }
+    try {
+      await apiClient.put(`/encomiendas/${encomiendaId}/conductor`, { conductorId });
+      fetchEncomiendas();
+      alert('Conductor asignado exitosamente.');
+    } catch (err) {
+      console.error(err);
+      alert('Error al asignar el conductor.');
     }
   };
 
@@ -95,15 +123,40 @@ export default function EncomiendasTab() {
           <div className="p-6 text-center text-slate-400 text-sm">No hay encomiendas registradas.</div>
         ) : (
           <div className="divide-y divide-slate-700">
-            {encomiendas.map((item, idx) => (
-              <div key={idx} className="p-4 flex justify-between items-center text-sm">
-                <div>
-                  <span className="font-bold text-blue-400">{item.codigoGuia}</span>
-                  <p className="text-slate-300 text-xs mt-0.5">Destinatario: {item.nombreDestinatario} ({item.direccionDestino})</p>
+            {encomiendas.map((item) => (
+              <div key={item.id} className="p-4 flex flex-col gap-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="font-bold text-blue-400">{item.codigoGuia}</span>
+                    <p className="text-slate-300 text-xs mt-0.5">Destinatario: {item.nombreDestinatario} ({item.direccionDestino})</p>
+                  </div>
+                  <span className="px-2.5 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium">
+                    {item.estado || 'REGISTRADO'}
+                  </span>
                 </div>
-                <span className="px-2.5 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium">
-                  {item.estado || 'REGISTRADO'}
-                </span>
+
+                {item.conductor ? (
+                  <p className="text-xs text-emerald-300">Conductor asignado: {item.conductor.nombre}</p>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <select
+                      className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-blue-500"
+                      value={asignaciones[item.id] || ''}
+                      onChange={(e) => setAsignaciones({...asignaciones, [item.id]: e.target.value})}
+                    >
+                      <option value="">Seleccionar conductor</option>
+                      {conductores.map((c, idx) => (
+                        <option key={idx} value={c.id}>{c.nombre}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleAsignarConductor(item.id)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs transition-colors whitespace-nowrap"
+                    >
+                      Asignar conductor
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
