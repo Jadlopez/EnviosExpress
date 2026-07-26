@@ -1,6 +1,7 @@
 package com.enviosexpress.backend.auth;
 
 import com.enviosexpress.backend.auth.dto.AuthResponse;
+import com.enviosexpress.backend.auth.dto.GoogleAuthRequest;
 import com.enviosexpress.backend.auth.dto.LoginRequest;
 import com.enviosexpress.backend.auth.dto.RegisterRequest;
 import com.enviosexpress.backend.usuario.UsuarioResponse;
@@ -30,5 +31,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.iniciarSesion(request));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginConGoogle(@Valid @RequestBody GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.iniciarSesionConGoogle(request.idToken()));
     }
 }

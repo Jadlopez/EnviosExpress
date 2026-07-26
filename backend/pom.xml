@@ -79,6 +79,13 @@
             <version>${springdoc.version}</version>
         </dependency>
 
+        <!-- Verificacion de ID Token de Google Sign-In -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+
         <!-- Carga variables de entorno desde .env -->
         <dependency>
             <groupId>me.paulschwarz</groupId>

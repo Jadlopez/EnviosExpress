@@ -11,6 +11,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const redirigirSegunRol = (rol) => {
+    if (rol === 'ADMIN' || rol === 'DESPACHADOR') {
+      navigate('/admin');
+    } else if (rol === 'CONDUCTOR') {
+      navigate('/driver');
+    } else {
+      navigate('/rastreo');
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,23 +33,33 @@ export default function Login() {
       });
 
       const { token, rol } = response.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('rol', rol);
-
-      if (rol === 'ADMIN' || rol === 'DESPACHADOR') {
-        navigate('/admin');
-      } else if (rol === 'CONDUCTOR') {
-        navigate('/driver');
-      } else {
-        navigate('/rastreo');
-      }
+      redirigirSegunRol(rol);
 
     } catch (err) {
       console.error(err);
       setError('Credenciales inválidas o error al conectar con el servidor.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    try {
+      const response = await apiClient.post('/auth/google', {
+        idToken: credentialResponse.credential,
+      });
+
+      const { token, rol } = response.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('rol', rol);
+      redirigirSegunRol(rol);
+    } catch (err) {
+      console.error(err);
+      setError('No fue posible iniciar sesión con Google.');
     }
   };
 
@@ -67,29 +87,7 @@ export default function Login() {
         {/* Botón de Google Login */}
         <div className="flex justify-center mb-4">
           <GoogleLogin
-            onSuccess={async (credentialResponse) => {
-              try {
-                const response = await apiClient.post(
-                  "/auth/google",
-                  {
-                    idToken: credentialResponse.credential,
-                  }
-                );
-
-                console.log(response.data);
-
-                localStorage.setItem("token", response.data.token);
-                // Si tu backend también devuelve el rol en la respuesta de Google, puedes guardarlo:
-                if (response.data.rol) {
-                  localStorage.setItem("rol", response.data.rol);
-                }
-
-                navigate("/dashboard");
-              } catch (err) {
-                console.error(err);
-                setError("No fue posible iniciar sesión con Google");
-              }
-            }}
+            onSuccess={handleGoogleSuccess}
             onError={() => {
               setError("Error iniciando sesión con Google");
             }}

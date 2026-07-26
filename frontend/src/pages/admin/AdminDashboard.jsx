@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Truck, Package, MapPin, LogOut, Users, IdCard, FileBarChart } from 'lucide-react';
+import { LayoutDashboard, Truck, Package, MapPin, LogOut, Users, IdCard, FileBarChart, ShieldCheck } from 'lucide-react';
 import EncomiendasTab from './tabs/EncomiendasTab';
 import VehiculosTab from './tabs/VehiculosTab';
 import ConductoresTab from './tabs/ConductoresTab';
 import ClientesTab from './tabs/ClientesTab';
 import RutasTab from './tabs/RutasTab';
 import ReportesTab from './tabs/ReportesTab';
+import UsuariosTab from './tabs/UsuariosTab';
 
 const TABS = [
   { id: 'encomiendas', label: 'Encomiendas', icon: Package, Component: EncomiendasTab },
@@ -15,18 +16,22 @@ const TABS = [
   { id: 'clientes', label: 'Clientes', icon: Users, Component: ClientesTab },
   { id: 'rutas', label: 'Rutas', icon: MapPin, Component: RutasTab },
   { id: 'reportes', label: 'Reportes', icon: FileBarChart, Component: ReportesTab },
+  { id: 'usuarios', label: 'Usuarios', icon: ShieldCheck, Component: UsuariosTab, soloAdmin: true },
 ];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('encomiendas');
   const navigate = useNavigate();
+  const rolActual = localStorage.getItem('rol');
 
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
   };
 
-  const ActiveComponent = TABS.find((tab) => tab.id === activeTab)?.Component;
+  const tabsVisibles = TABS.filter((tab) => !tab.soloAdmin || rolActual === 'ADMIN');
+  const ActiveComponent = tabsVisibles.find((tab) => tab.id === activeTab)?.Component
+    ?? tabsVisibles[0]?.Component;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col md:flex-row">
@@ -44,7 +49,7 @@ export default function AdminDashboard() {
           </div>
 
           <nav className="space-y-2">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {tabsVisibles.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}

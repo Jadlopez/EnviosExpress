@@ -37,6 +37,33 @@ export default function Register() {
     }
   };
 
+  const redirigirSegunRol = (rol) => {
+    if (rol === "ADMIN" || rol === "DESPACHADOR") {
+      navigate("/admin");
+    } else if (rol === "CONDUCTOR") {
+      navigate("/driver");
+    } else {
+      navigate("/rastreo");
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    try {
+      const response = await apiClient.post("/auth/google", {
+        idToken: credentialResponse.credential,
+      });
+
+      const { token, rol } = response.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("rol", rol);
+      redirigirSegunRol(rol);
+    } catch (err) {
+      console.error(err);
+      setError("No fue posible iniciar sesión con Google.");
+    }
+  };
+
   return (
     <div className="h-dvh w-full bg-slate-900 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-2xl p-5 sm:p-8 border border-slate-700 my-auto box-border">
@@ -61,25 +88,7 @@ export default function Register() {
         )}
 
         <GoogleLogin
-          onSuccess={async (credentialResponse) => {
-            try {
-              const response = await apiClient.post(
-                "/auth/google",
-                {
-                  idToken: credentialResponse.credential,
-                },
-              );
-
-              console.log(response.data);
-
-              localStorage.setItem("token", response.data.token);
-
-              navigate("/dashboard");
-            } catch (err) {
-              console.error(err);
-              setError("No fue posible iniciar sesión con Google");
-            }
-          }}
+          onSuccess={handleGoogleSuccess}
           onError={() => {
             setError("Error iniciando sesión con Google");
           }}
