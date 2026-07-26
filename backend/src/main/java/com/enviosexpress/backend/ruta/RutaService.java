@@ -52,8 +52,8 @@ public class RutaService {
         Ruta ruta = rutaRepository.findById(rutaId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Ruta no encontrada."));
 
-        if (ruta.getEstado() == EstadoRuta.ASIGNADA) {
-            throw new ApiException(HttpStatus.CONFLICT, "La ruta ya tiene un vehículo y conductor asignados.");
+        if (ruta.getEstado() != EstadoRuta.PENDIENTE) {
+            throw new ApiException(HttpStatus.CONFLICT, "Solo se puede asignar una ruta en estado PENDIENTE.");
         }
 
         Vehiculo vehiculo = vehiculoRepository.findById(request.vehiculoId())
@@ -78,5 +78,46 @@ public class RutaService {
         ruta.setEstado(EstadoRuta.ASIGNADA);
 
         return RutaResponse.from(rutaRepository.save(ruta));
+    }
+
+    @Transactional
+    public RutaResponse finalizar(Long rutaId) {
+        Ruta ruta = rutaRepository.findById(rutaId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Ruta no encontrada."));
+
+        if (ruta.getEstado() != EstadoRuta.ASIGNADA) {
+            throw new ApiException(HttpStatus.CONFLICT, "Solo se puede finalizar una ruta que esté ASIGNADA.");
+        }
+
+        liberarRecursos(ruta);
+        ruta.setEstado(EstadoRuta.FINALIZADA);
+
+        return RutaResponse.from(rutaRepository.save(ruta));
+    }
+
+    @Transactional
+    public RutaResponse cancelar(Long rutaId) {
+        Ruta ruta = rutaRepository.findById(rutaId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Ruta no encontrada."));
+
+        if (ruta.getEstado() == EstadoRuta.FINALIZADA || ruta.getEstado() == EstadoRuta.CANCELADA) {
+            throw new ApiException(HttpStatus.CONFLICT, "La ruta ya está en un estado final y no se puede cancelar.");
+        }
+
+        liberarRecursos(ruta);
+        ruta.setEstado(EstadoRuta.CANCELADA);
+
+        return RutaResponse.from(rutaRepository.save(ruta));
+    }
+
+    private void liberarRecursos(Ruta ruta) {
+        if (ruta.getVehiculo() != null) {
+            ruta.getVehiculo().setDisponible(true);
+            vehiculoRepository.save(ruta.getVehiculo());
+        }
+        if (ruta.getConductor() != null) {
+            ruta.getConductor().setDisponible(true);
+            conductorRepository.save(ruta.getConductor());
+        }
     }
 }

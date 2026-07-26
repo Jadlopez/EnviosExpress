@@ -93,6 +93,31 @@ export default function RutasTab() {
     }
   };
 
+  const handleFinalizarRuta = async (rutaId) => {
+    try {
+      await apiClient.put(`/rutas/${rutaId}/finalizar`);
+      fetchRutas();
+      fetchVehiculos();
+      fetchConductores();
+    } catch (err) {
+      console.error(err);
+      alert('Error al finalizar la ruta.');
+    }
+  };
+
+  const handleCancelarRuta = async (rutaId) => {
+    if (!window.confirm('¿Cancelar esta ruta? Esta acción no se puede deshacer.')) return;
+    try {
+      await apiClient.put(`/rutas/${rutaId}/cancelar`);
+      fetchRutas();
+      fetchVehiculos();
+      fetchConductores();
+    } catch (err) {
+      console.error(err);
+      alert('Error al cancelar la ruta.');
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -195,7 +220,11 @@ export default function RutasTab() {
                     {r.paradas && <p className="text-slate-300 text-xs mt-0.5">Paradas: {r.paradas}</p>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="px-2.5 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      r.estado === 'FINALIZADA' ? 'bg-emerald-600/20 text-emerald-300' :
+                      r.estado === 'CANCELADA' ? 'bg-red-600/20 text-red-300' :
+                      'bg-slate-700 text-slate-300'
+                    }`}>
                       {r.estado || 'PENDIENTE'}
                     </span>
                     <button
@@ -218,11 +247,13 @@ export default function RutasTab() {
                   />
                 )}
 
-                {r.vehiculo && r.conductor ? (
+                {r.vehiculo && r.conductor && (
                   <p className="text-xs text-emerald-300">
                     Asignada a {r.vehiculo.placa} — Conductor: {r.conductor.nombre}
                   </p>
-                ) : (
+                )}
+
+                {r.estado === 'PENDIENTE' && (
                   <div className="flex flex-col sm:flex-row gap-2">
                     <select
                       className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-blue-500"
@@ -249,6 +280,25 @@ export default function RutasTab() {
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs transition-colors whitespace-nowrap"
                     >
                       Asignar
+                    </button>
+                  </div>
+                )}
+
+                {(r.estado === 'PENDIENTE' || r.estado === 'ASIGNADA') && (
+                  <div className="flex gap-2 pt-1">
+                    {r.estado === 'ASIGNADA' && (
+                      <button
+                        onClick={() => handleFinalizarRuta(r.id)}
+                        className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-semibold transition-colors"
+                      >
+                        Finalizar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleCancelarRuta(r.id)}
+                      className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 rounded-lg text-xs font-semibold transition-colors"
+                    >
+                      Cancelar
                     </button>
                   </div>
                 )}

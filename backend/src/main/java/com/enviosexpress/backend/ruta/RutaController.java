@@ -41,4 +41,14 @@ public class RutaController {
     ) {
         return ResponseEntity.ok(rutaService.asignar(id, request));
     }
+
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<RutaResponse> finalizar(@PathVariable Long id) {
+        return ResponseEntity.ok(rutaService.finalizar(id));
+    }
+
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<RutaResponse> cancelar(@PathVariable Long id) {
+        return ResponseEntity.ok(rutaService.cancelar(id));
+    }
 }
