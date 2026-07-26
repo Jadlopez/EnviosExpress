@@ -181,7 +181,7 @@ export default function RutasTab() {
                       onChange={(e) => setAsignaciones({...asignaciones, [r.id]: {...asignaciones[r.id], vehiculoId: e.target.value}})}
                     >
                       <option value="">Seleccionar vehículo</option>
-                      {vehiculos.map((v, idx) => (
+                      {vehiculos.filter((v) => v.disponible).map((v, idx) => (
                         <option key={idx} value={v.id}>{v.placa} - {v.modelo}</option>
                       ))}
                     </select>
@@ -191,7 +191,7 @@ export default function RutasTab() {
                       onChange={(e) => setAsignaciones({...asignaciones, [r.id]: {...asignaciones[r.id], conductorId: e.target.value}})}
                     >
                       <option value="">Seleccionar conductor</option>
-                      {conductores.map((c, idx) => (
+                      {conductores.filter((c) => c.disponible).map((c, idx) => (
                         <option key={idx} value={c.id}>{c.nombre}</option>
                       ))}
                     </select>
