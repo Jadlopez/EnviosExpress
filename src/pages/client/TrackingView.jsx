@@ -1,33 +1,66 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Search, Package, Navigation, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Package, AlertCircle, ArrowLeft, BellRing } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../api/client';
+import RouteMap from '../../components/RouteMap';
+
+const POLL_INTERVAL_MS = 8000;
 
 export default function TrackingView() {
   const [codigoGuia, setCodigoGuia] = useState('');
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notificacion, setNotificacion] = useState('');
   const navigate = useNavigate();
+  const codigoActivoRef = useRef('');
+  const estadoAnteriorRef = useRef('');
+
+  const consultarEstado = async (codigo, { silencioso } = {}) => {
+    try {
+      const response = await apiClient.get(`/trazabilidad/${codigo}`);
+      const nuevoEstado = response.data.estado;
+
+      if (silencioso && estadoAnteriorRef.current && nuevoEstado && nuevoEstado !== estadoAnteriorRef.current) {
+        setNotificacion(`Tu encomienda cambió de estado: ahora está "${nuevoEstado}"`);
+      }
+      estadoAnteriorRef.current = nuevoEstado;
+      setResultado(response.data);
+      return true;
+    } catch (err) {
+      console.error(err);
+      if (!silencioso) {
+        setError('No se encontró ninguna encomienda con ese código de guía o hubo un error al consultar.');
+      }
+      return false;
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!codigoGuia.trim()) return;
+    const codigo = codigoGuia.trim();
+    if (!codigo) return;
 
     setError('');
     setLoading(true);
     setResultado(null);
+    setNotificacion('');
+    estadoAnteriorRef.current = '';
 
-    try {
-      const response = await axios.get(`http://localhost:8080/api/v1/trazabilidad/${codigoGuia.trim()}`);
-      setResultado(response.data);
-    } catch (err) {
-      console.error(err);
-      setError('No se encontró ninguna encomienda con ese código de guía o hubo un error al consultar.');
-    } finally {
-      setLoading(false);
-    }
+    const ok = await consultarEstado(codigo);
+    codigoActivoRef.current = ok ? codigo : '';
+    setLoading(false);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (codigoActivoRef.current) {
+        consultarEstado(codigoActivoRef.current, { silencioso: true });
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-between">
@@ -87,6 +120,19 @@ export default function TrackingView() {
           </div>
         )}
 
+        {/* Notificación de cambio de estado (RF-11) */}
+        {notificacion && (
+          <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 text-blue-300 rounded-xl flex items-center justify-between gap-3 text-sm font-medium">
+            <span className="flex items-center space-x-3">
+              <BellRing className="w-5 h-5 flex-shrink-0 text-blue-400" />
+              <span>{notificacion}</span>
+            </span>
+            <button onClick={() => setNotificacion('')} className="text-blue-300 hover:text-white text-xs font-semibold">
+              Cerrar
+            </button>
+          </div>
+        )}
+
         {/* Resultado de la Consulta */}
         {resultado && (
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
@@ -111,9 +157,19 @@ export default function TrackingView() {
               </div>
             </div>
 
+            {(resultado.latitud != null && resultado.longitud != null) && (
+              <div>
+                <span className="text-xs text-slate-400 uppercase tracking-wider block mb-2">Ubicación del Vehículo</span>
+                <RouteMap
+                  points={[{ lat: resultado.latitud, lng: resultado.longitud, label: 'Vehículo asignado' }]}
+                  height="260px"
+                />
+              </div>
+            )}
+
             <div className="text-center pt-2">
               <p className="text-xs text-slate-400">
-                Última actualización registrada por el sistema de despacho.
+                Última actualización registrada por el sistema de despacho. El estado se actualiza automáticamente cada {POLL_INTERVAL_MS / 1000} segundos.
               </p>
             </div>
           </div>

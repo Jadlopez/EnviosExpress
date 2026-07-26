@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import { Lock, Mail, ArrowRight, Package } from 'lucide-react';
 import { GoogleLogin } from "@react-oauth/google";
+import apiClient from '../../api/client';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -17,7 +17,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/login', {
+      const response = await apiClient.post('/auth/login', {
         email,
         password
       });
@@ -69,8 +69,8 @@ export default function Login() {
           <GoogleLogin
             onSuccess={async (credentialResponse) => {
               try {
-                const response = await axios.post(
-                  "http://localhost:8080/api/v1/auth/google",
+                const response = await apiClient.post(
+                  "/auth/google",
                   {
                     idToken: credentialResponse.credential,
                   }

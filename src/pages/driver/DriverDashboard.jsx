@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Truck, Package, CheckCircle2, AlertTriangle, LogOut, Navigation, RefreshCw } from 'lucide-react';
+import apiClient from '../../api/client';
 
 export default function DriverDashboard() {
   const [encomiendas, setEncomiendas] = useState([]);
@@ -16,10 +16,7 @@ export default function DriverDashboard() {
   const fetchHojaDeRuta = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/v1/conductor/mis-rutas', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/conductor/mis-rutas');
       setEncomiendas(response.data);
     } catch (err) {
       console.error(err);
@@ -31,11 +28,7 @@ export default function DriverDashboard() {
 
   const handleUpdateStatus = async (idEncomienda, nuevoEstado) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:8080/api/v1/conductor/encomienda/${idEncomienda}/estado`, 
-        { estado: nuevoEstado },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await apiClient.put(`/conductor/encomienda/${idEncomienda}/estado`, { estado: nuevoEstado });
       fetchHojaDeRuta();
     } catch (err) {
       console.error(err);

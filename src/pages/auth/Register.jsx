@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import { Lock, Mail, User, Package } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
+import apiClient from "../../api/client";
 
 export default function Register() {
   const [nombre, setNombre] = useState("");
@@ -18,7 +18,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/api/v1/auth/register", {
+      await apiClient.post("/auth/register", {
         nombre,
         email,
         password,
@@ -63,8 +63,8 @@ export default function Register() {
         <GoogleLogin
           onSuccess={async (credentialResponse) => {
             try {
-              const response = await axios.post(
-                "http://localhost:8080/api/v1/auth/google",
+              const response = await apiClient.post(
+                "/auth/google",
                 {
                   idToken: credentialResponse.credential,
                 },
