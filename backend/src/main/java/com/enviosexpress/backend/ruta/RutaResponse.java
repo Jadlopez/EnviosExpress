@@ -2,6 +2,7 @@ package com.enviosexpress.backend.ruta;
 
 import com.enviosexpress.backend.conductor.ConductorResponse;
 import com.enviosexpress.backend.vehiculo.VehiculoResponse;
+import java.time.Instant;
 
 public record RutaResponse(
         Long id,
@@ -13,6 +14,8 @@ public record RutaResponse(
         Double destinoLat,
         Double destinoLng,
         EstadoRuta estado,
+        Double costoEstimado,
+        Instant fechaCreacion,
         VehiculoResponse vehiculo,
         ConductorResponse conductor
 ) {
@@ -28,6 +31,8 @@ public record RutaResponse(
                 ruta.getDestinoLat(),
                 ruta.getDestinoLng(),
                 ruta.getEstado(),
+                ruta.getCostoEstimado(),
+                ruta.getFechaCreacion(),
                 ruta.getVehiculo() != null ? VehiculoResponse.from(ruta.getVehiculo()) : null,
                 ruta.getConductor() != null ? ConductorResponse.from(ruta.getConductor()) : null
         );

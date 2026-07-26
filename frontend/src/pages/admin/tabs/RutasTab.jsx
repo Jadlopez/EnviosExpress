@@ -8,7 +8,10 @@ export default function RutasTab() {
   const [vehiculos, setVehiculos] = useState([]);
   const [conductores, setConductores] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [nuevaRuta, setNuevaRuta] = useState({ origen: '', destino: '', paradas: '' });
+  const [nuevaRuta, setNuevaRuta] = useState({
+    origen: '', destino: '', paradas: '',
+    origenLat: '', origenLng: '', destinoLat: '', destinoLng: '', costoEstimado: '',
+  });
   const [asignaciones, setAsignaciones] = useState({});
   const [rutaMapaAbierta, setRutaMapaAbierta] = useState(null);
 
@@ -51,8 +54,18 @@ export default function RutasTab() {
   const handleCreateRuta = async (e) => {
     e.preventDefault();
     try {
-      await apiClient.post('/rutas', nuevaRuta);
-      setNuevaRuta({ origen: '', destino: '', paradas: '' });
+      const aNumeroONulo = (valor) => (valor === '' ? null : Number(valor));
+      await apiClient.post('/rutas', {
+        origen: nuevaRuta.origen,
+        destino: nuevaRuta.destino,
+        paradas: nuevaRuta.paradas,
+        origenLat: aNumeroONulo(nuevaRuta.origenLat),
+        origenLng: aNumeroONulo(nuevaRuta.origenLng),
+        destinoLat: aNumeroONulo(nuevaRuta.destinoLat),
+        destinoLng: aNumeroONulo(nuevaRuta.destinoLng),
+        costoEstimado: aNumeroONulo(nuevaRuta.costoEstimado),
+      });
+      setNuevaRuta({ origen: '', destino: '', paradas: '', origenLat: '', origenLng: '', destinoLat: '', destinoLng: '', costoEstimado: '' });
       fetchRutas();
       alert('Ruta creada exitosamente.');
     } catch (err) {
@@ -127,6 +140,42 @@ export default function RutasTab() {
           <PlusCircle className="w-4 h-4" />
           <span>Crear Ruta</span>
         </button>
+
+        <div className="md:col-span-4 pt-4 border-t border-slate-700">
+          <p className="text-xs text-slate-400 mb-3">Datos opcionales — coordenadas para el mapa (RF-13) y costo estimado para reportes (RF-12)</p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <input
+              type="number" step="any" placeholder="Lat. origen"
+              value={nuevaRuta.origenLat}
+              onChange={(e) => setNuevaRuta({...nuevaRuta, origenLat: e.target.value})}
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number" step="any" placeholder="Lng. origen"
+              value={nuevaRuta.origenLng}
+              onChange={(e) => setNuevaRuta({...nuevaRuta, origenLng: e.target.value})}
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number" step="any" placeholder="Lat. destino"
+              value={nuevaRuta.destinoLat}
+              onChange={(e) => setNuevaRuta({...nuevaRuta, destinoLat: e.target.value})}
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number" step="any" placeholder="Lng. destino"
+              value={nuevaRuta.destinoLng}
+              onChange={(e) => setNuevaRuta({...nuevaRuta, destinoLng: e.target.value})}
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number" step="any" placeholder="Costo estimado (COP)"
+              value={nuevaRuta.costoEstimado}
+              onChange={(e) => setNuevaRuta({...nuevaRuta, costoEstimado: e.target.value})}
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+            />
+          </div>
+        </div>
       </form>
 
       {/* Listado de rutas con asignación de vehículo/conductor */}

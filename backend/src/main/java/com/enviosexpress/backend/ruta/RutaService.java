@@ -38,6 +38,11 @@ public class RutaService {
         ruta.setOrigen(request.origen());
         ruta.setDestino(request.destino());
         ruta.setParadas(request.paradas());
+        ruta.setOrigenLat(request.origenLat());
+        ruta.setOrigenLng(request.origenLng());
+        ruta.setDestinoLat(request.destinoLat());
+        ruta.setDestinoLng(request.destinoLng());
+        ruta.setCostoEstimado(request.costoEstimado());
 
         return RutaResponse.from(rutaRepository.save(ruta));
     }
