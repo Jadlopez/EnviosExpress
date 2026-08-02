@@ -1,80 +1,82 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, Package } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Lock, Mail, ArrowRight, Package } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
-import apiClient from '../../api/client';
+import apiClient from "../../api/client";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const redirigirSegunRol = (rol) => {
-    if (rol === 'ADMIN' || rol === 'DESPACHADOR') {
-      navigate('/admin');
-    } else if (rol === 'CONDUCTOR') {
-      navigate('/driver');
+    if (rol === "ADMIN" || rol === "DESPACHADOR") {
+      navigate("/admin");
+    } else if (rol === "CONDUCTOR") {
+      navigate("/driver");
     } else {
-      navigate('/rastreo');
+      navigate("/rastreo");
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await apiClient.post('/auth/login', {
+      const response = await apiClient.post("/auth/login", {
         email,
-        password
+        password,
       });
 
       const { token, rol } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('rol', rol);
+      localStorage.setItem("token", token);
+      localStorage.setItem("rol", rol);
       redirigirSegunRol(rol);
-
     } catch (err) {
       console.error(err);
-      setError('Credenciales inválidas o error al conectar con el servidor.');
+      setError("Credenciales inválidas o error al conectar con el servidor.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setError('');
+    setError("");
     try {
-      const response = await apiClient.post('/auth/google', {
+      const response = await apiClient.post("/auth/google", {
         idToken: credentialResponse.credential,
       });
 
       const { token, rol } = response.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('rol', rol);
+      localStorage.setItem("token", token);
+      localStorage.setItem("rol", rol);
       redirigirSegunRol(rol);
     } catch (err) {
       console.error(err);
-      setError('No fue posible iniciar sesión con Google.');
+      setError("No fue posible iniciar sesión con Google.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 sm:px-6 py-8">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-8 overflow-y-auto">
       {/* Caja contenedora adaptada para móviles y escritorios */}
       <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
-        
         {/* Encabezado */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-blue-600/20 text-blue-400 mb-3 sm:mb-4">
             <Package className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">Envíos Express</h2>
-          <p className="text-slate-300 text-sm sm:text-base mt-1">Inicia sesión en tu cuenta</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            Envíos Express
+          </h2>
+          <p className="text-slate-300 text-sm sm:text-base mt-1">
+            Inicia sesión en tu cuenta
+          </p>
         </div>
 
         {/* Mensaje de Error */}
@@ -148,7 +150,7 @@ export default function Login() {
             disabled={loading}
             className="w-full mt-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base disabled:opacity-50 shadow-lg active:scale-95 cursor-pointer"
           >
-            <span>{loading ? 'Validando...' : 'Entrar al Sistema'}</span>
+            <span>{loading ? "Validando..." : "Entrar al Sistema"}</span>
             {!loading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
@@ -156,17 +158,22 @@ export default function Login() {
         {/* Enlaces inferiores optimizados para toque */}
         <div className="mt-6 space-y-3 text-center">
           <div>
-            <Link to="/register" className="text-sm text-blue-400 font-medium hover:underline transition-colors block py-1">
+            <Link
+              to="/register"
+              className="text-sm text-blue-400 font-medium hover:underline transition-colors block py-1"
+            >
               ¿No tienes una cuenta? Regístrate aquí
             </Link>
           </div>
           <div>
-            <Link to="/rastreo" className="text-sm text-slate-300 hover:text-white transition-colors block py-1">
+            <Link
+              to="/rastreo"
+              className="text-sm text-slate-300 hover:text-white transition-colors block py-1"
+            >
               ¿Solo quieres rastrear una encomienda? Haz clic aquí
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   );
