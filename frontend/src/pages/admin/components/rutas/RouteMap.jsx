@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMap } from "react-leaflet";
+import { useMemo, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -115,6 +116,24 @@ export default function RouteMap({
     return resultado;
   }, [points, origen, destino]);
 
+  function MapController({ center, puntos }) {
+    const map = useMap();
+
+    useEffect(() => {
+      if (puntos.length === 0) {
+        map.setView(center, 12);
+      } else if (puntos.length === 1) {
+        map.setView([puntos[0].lat, puntos[0].lng], 14);
+      } else {
+        map.fitBounds(
+          puntos.map((p) => [p.lat, p.lng]),
+          { padding: [50, 50] },
+        );
+      }
+    }, [map, center, puntos]);
+
+    return null;
+  }
   /*
    * Si no hay puntos,
    * mostramos Florencia.
@@ -134,7 +153,7 @@ export default function RouteMap({
       className="rounded-xl overflow-hidden border border-slate-700"
     >
       <MapContainer
-        center={center}
+        center={DEFAULT_CENTER}
         zoom={13}
         scrollWheelZoom
         style={{
@@ -142,6 +161,7 @@ export default function RouteMap({
           height: "100%",
         }}
       >
+        <MapController center={DEFAULT_CENTER} puntos={puntosMapa} />
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
