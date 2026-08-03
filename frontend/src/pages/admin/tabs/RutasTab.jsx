@@ -422,22 +422,21 @@ export default function RutasTab() {
                 </div>
 
                 {rutaMapaAbierta === r.id && (
-                  // <RouteMap
-                  //   points={[
-                  //     {
-                  //       lat: r.origenLat,
-                  //       lng: r.origenLng,
-                  //       label: `Origen: ${r.origen}`,
-                  //     },
-                  //     {
-                  //       lat: r.destinoLat,
-                  //       lng: r.destinoLng,
-                  //       label: `Destino: ${r.destino}`,
-                  //     },
-                  //   ]}
-                  //   height="260px"
-                  // />
-                  <></>
+                  <RouteMap
+                    points={[
+                      {
+                        lat: r.origenLat,
+                        lng: r.origenLng,
+                        label: `Origen: ${r.origen}`,
+                      },
+                      {
+                        lat: r.destinoLat,
+                        lng: r.destinoLng,
+                        label: `Destino: ${r.destino}`,
+                      },
+                    ]}
+                    height="260px"
+                  />
                 )}
 
                 {r.vehiculo && r.conductor && (
