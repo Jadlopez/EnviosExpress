@@ -1,37 +1,76 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Truck, Package, MapPin, LogOut, Users, IdCard, FileBarChart, ShieldCheck } from 'lucide-react';
-import EncomiendasTab from './tabs/EncomiendasTab';
-import VehiculosTab from './tabs/VehiculosTab';
-import ConductoresTab from './tabs/ConductoresTab';
-import ClientesTab from './tabs/ClientesTab';
-import RutasTab from './tabs/RutasTab';
-import ReportesTab from './tabs/ReportesTab';
-import UsuariosTab from './tabs/UsuariosTab';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Truck,
+  Package,
+  MapPin,
+  LogOut,
+  Users,
+  IdCard,
+  FileBarChart,
+  ShieldCheck,
+} from "lucide-react";
+import EncomiendasTab from "./tabs/EncomiendasTab";
+import VehiculosTab from "./tabs/VehiculosTab";
+import ConductoresTab from "./tabs/ConductoresTab";
+import ClientesTab from "./tabs/ClientesTab";
+import RutasTab from "./tabs/RutasTab";
+import ReportesTab from "./tabs/ReportesTab";
+import UsuariosTab from "./tabs/UsuariosTab";
 
 const TABS = [
-  { id: 'encomiendas', label: 'Encomiendas', icon: Package, Component: EncomiendasTab },
-  { id: 'vehiculos', label: 'Vehículos / Flota', icon: Truck, Component: VehiculosTab },
-  { id: 'conductores', label: 'Conductores', icon: IdCard, Component: ConductoresTab },
-  { id: 'clientes', label: 'Clientes', icon: Users, Component: ClientesTab },
-  { id: 'rutas', label: 'Rutas', icon: MapPin, Component: RutasTab },
-  { id: 'reportes', label: 'Reportes', icon: FileBarChart, Component: ReportesTab },
-  { id: 'usuarios', label: 'Usuarios', icon: ShieldCheck, Component: UsuariosTab, soloAdmin: true },
+  {
+    id: "encomiendas",
+    label: "Encomiendas",
+    icon: Package,
+    Component: EncomiendasTab,
+  },
+  {
+    id: "vehiculos",
+    label: "Vehículos / Flota",
+    icon: Truck,
+    Component: VehiculosTab,
+  },
+  {
+    id: "conductores",
+    label: "Conductores",
+    icon: IdCard,
+    Component: ConductoresTab,
+  },
+  { id: "clientes", label: "Clientes", icon: Users, Component: ClientesTab },
+  { id: "rutas", label: "Rutas", icon: MapPin, Component: RutasTab },
+  {
+    id: "reportes",
+    label: "Reportes",
+    icon: FileBarChart,
+    Component: ReportesTab,
+  },
+  {
+    id: "usuarios",
+    label: "Usuarios",
+    icon: ShieldCheck,
+    Component: UsuariosTab,
+    soloAdmin: true,
+  },
 ];
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('encomiendas');
+  const [activeTab, setActiveTab] = useState("encomiendas");
   const navigate = useNavigate();
-  const rolActual = localStorage.getItem('rol');
+  const rolActual = localStorage.getItem("rol");
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/');
+    navigate("/");
   };
 
-  const tabsVisibles = TABS.filter((tab) => !tab.soloAdmin || rolActual === 'ADMIN');
-  const ActiveComponent = tabsVisibles.find((tab) => tab.id === activeTab)?.Component
-    ?? tabsVisibles[0]?.Component;
+  const tabsVisibles = TABS.filter(
+    (tab) => !tab.soloAdmin || rolActual === "ADMIN",
+  );
+  const ActiveComponent =
+    tabsVisibles.find((tab) => tab.id === activeTab)?.Component ??
+    tabsVisibles[0]?.Component;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col md:flex-row">
@@ -54,7 +93,9 @@ export default function AdminDashboard() {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
-                  activeTab === id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                  activeTab === id
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-400 hover:bg-slate-700/50 hover:text-white"
                 }`}
               >
                 <Icon className="w-4 h-4" />

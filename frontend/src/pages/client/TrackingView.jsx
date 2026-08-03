@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
-import RouteMap from "../admin/components/RouteMap";
+import RouteMap from "../admin/components/rutas/RouteMap";
 
 const POLL_INTERVAL_MS = 8000;
 

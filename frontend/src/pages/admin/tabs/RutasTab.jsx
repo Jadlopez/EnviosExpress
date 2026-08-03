@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PlusCircle, Map } from "lucide-react";
 import apiClient from "../../../api/client";
-import RouteMap from "../components/RouteMap";
+import RouteMap from "../components/rutas/RouteMap";
 
 export default function RutasTab() {
   const [rutas, setRutas] = useState([]);
@@ -21,6 +21,43 @@ export default function RutasTab() {
   const [asignaciones, setAsignaciones] = useState({});
   const [rutaMapaAbierta, setRutaMapaAbierta] = useState(null);
   const [seleccionando, setSeleccionando] = useState("origen");
+
+  const distancia = useMemo(() => {
+    if (
+      !nuevaRuta.origenLat ||
+      !nuevaRuta.origenLng ||
+      !nuevaRuta.destinoLat ||
+      !nuevaRuta.destinoLng
+    ) {
+      return null;
+    }
+
+    const lat1 = Number(nuevaRuta.origenLat);
+    const lon1 = Number(nuevaRuta.origenLng);
+
+    const lat2 = Number(nuevaRuta.destinoLat);
+    const lon2 = Number(nuevaRuta.destinoLng);
+
+    const R = 6371;
+
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return (R * c).toFixed(2);
+  }, [
+    nuevaRuta.origenLat,
+    nuevaRuta.origenLng,
+    nuevaRuta.destinoLat,
+    nuevaRuta.destinoLng,
+  ]);
 
   useEffect(() => {
     fetchRutas();
@@ -137,64 +174,198 @@ export default function RutasTab() {
     }
   };
 
+  const formularioCompleto =
+    nuevaRuta.origen &&
+    nuevaRuta.destino &&
+    nuevaRuta.origenLat &&
+    nuevaRuta.origenLng &&
+    nuevaRuta.destinoLat &&
+    nuevaRuta.destinoLng;
+
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Gestión de Rutas</h2>
-      </div>
+      {/* ============================================= */}
+      {/* CREACIÓN DE RUTA */}
+      {/* ============================================= */}
 
-      {/* Formulario para crear ruta */}
-      <div className="md:col-span-4 pt-4 border-t border-slate-700">
-        <div className="flex gap-2 mb-4">
-          <button
-            type="button"
-            onClick={() => setSeleccionando("origen")}
-            className={`px-4 py-2 rounded-lg ${
-              seleccionando === "origen" ? "bg-blue-600" : "bg-slate-700"
-            }`}
-          >
-            Seleccionar origen
-          </button>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* ================= MAPA ================= */}
 
-          <button
-            type="button"
-            onClick={() => setSeleccionando("destino")}
-            className={`px-4 py-2 rounded-lg ${
-              seleccionando === "destino" ? "bg-blue-600" : "bg-slate-700"
-            }`}
-          >
-            Seleccionar destino
-          </button>
+        <div className="xl:col-span-2">
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-4">
+            <h2 className="text-xl font-semibold mb-4">Nueva Ruta</h2>
+
+            <RouteMap
+              editable
+              selecting={seleccionando}
+              origen={{
+                lat: nuevaRuta.origenLat,
+                lng: nuevaRuta.origenLng,
+              }}
+              destino={{
+                lat: nuevaRuta.destinoLat,
+                lng: nuevaRuta.destinoLng,
+              }}
+              onSelect={(lat, lng, tipo) => {
+                if (tipo === "origen") {
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    origenLat: lat,
+                    origenLng: lng,
+                  }));
+
+                  setSeleccionando("destino");
+                } else {
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    destinoLat: lat,
+                    destinoLng: lng,
+                  }));
+                }
+              }}
+              height="550px"
+            />
+          </div>
         </div>
 
-        <RouteMap
-          editable
-          selecting={seleccionando}
-          origen={{
-            lat: Number(nuevaRuta.origenLat),
-            lng: Number(nuevaRuta.origenLng),
-          }}
-          destino={{
-            lat: Number(nuevaRuta.destinoLat),
-            lng: Number(nuevaRuta.destinoLng),
-          }}
-          onSelect={(lat, lng) => {
-            if (seleccionando === "origen") {
-              setNuevaRuta({
-                ...nuevaRuta,
-                origenLat: lat,
-                origenLng: lng,
-              });
-            } else {
-              setNuevaRuta({
-                ...nuevaRuta,
-                destinoLat: lat,
-                destinoLng: lng,
-              });
-            }
-          }}
-        />
+        {/* ================= PANEL ================= */}
+
+        <div>
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-5 space-y-5">
+            <h2 className="text-lg font-semibold">Información</h2>
+
+            <div>
+              <label className="block text-sm mb-1">Origen</label>
+
+              <input
+                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2"
+                value={nuevaRuta.origen}
+                onChange={(e) =>
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    origen: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Destino</label>
+
+              <input
+                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2"
+                value={nuevaRuta.destino}
+                onChange={(e) =>
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    destino: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Paradas</label>
+
+              <textarea
+                rows={3}
+                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2"
+                value={nuevaRuta.paradas}
+                onChange={(e) =>
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    paradas: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Costo estimado</label>
+
+              <input
+                type="number"
+                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2"
+                value={nuevaRuta.costoEstimado}
+                onChange={(e) =>
+                  setNuevaRuta((prev) => ({
+                    ...prev,
+                    costoEstimado: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                className={`rounded-lg p-2 transition ${
+                  seleccionando === "origen" ? "bg-blue-600" : "bg-slate-700"
+                }`}
+                onClick={() => setSeleccionando("origen")}
+              >
+                Seleccionar origen
+              </button>
+
+              <button
+                type="button"
+                className={`rounded-lg p-2 transition ${
+                  seleccionando === "destino" ? "bg-blue-600" : "bg-slate-700"
+                }`}
+                onClick={() => setSeleccionando("destino")}
+              >
+                Seleccionar destino
+              </button>
+            </div>
+
+            <div className="border-t border-slate-700 pt-4 space-y-3">
+              <div>
+                <strong>Origen</strong>
+
+                <div className="text-sm">
+                  Lat: {nuevaRuta.origenLat || "--"}
+                </div>
+
+                <div className="text-sm">
+                  Lng: {nuevaRuta.origenLng || "--"}
+                </div>
+              </div>
+
+              <div>
+                <strong>Destino</strong>
+
+                <div className="text-sm">
+                  Lat: {nuevaRuta.destinoLat || "--"}
+                </div>
+
+                <div className="text-sm">
+                  Lng: {nuevaRuta.destinoLng || "--"}
+                </div>
+              </div>
+
+              <div>
+                <strong>Distancia</strong>
+
+                <div>{distancia ? `${distancia} km` : "--"}</div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCreateRuta}
+              disabled={!formularioCompleto}
+              className={`w-full rounded-lg p-3 transition ${
+                formularioCompleto
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-slate-700 cursor-not-allowed"
+              }`}
+            >
+              Crear Ruta
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* AQUÍ DEBE CONTINUAR TU LISTADO ORIGINAL */}
 
       {/* Listado de rutas con asignación de vehículo/conductor */}
       <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
@@ -251,21 +422,22 @@ export default function RutasTab() {
                 </div>
 
                 {rutaMapaAbierta === r.id && (
-                  <RouteMap
-                    points={[
-                      {
-                        lat: r.origenLat,
-                        lng: r.origenLng,
-                        label: `Origen: ${r.origen}`,
-                      },
-                      {
-                        lat: r.destinoLat,
-                        lng: r.destinoLng,
-                        label: `Destino: ${r.destino}`,
-                      },
-                    ]}
-                    height="260px"
-                  />
+                  // <RouteMap
+                  //   points={[
+                  //     {
+                  //       lat: r.origenLat,
+                  //       lng: r.origenLng,
+                  //       label: `Origen: ${r.origen}`,
+                  //     },
+                  //     {
+                  //       lat: r.destinoLat,
+                  //       lng: r.destinoLng,
+                  //       label: `Destino: ${r.destino}`,
+                  //     },
+                  //   ]}
+                  //   height="260px"
+                  // />
+                  <></>
                 )}
 
                 {r.vehiculo && r.conductor && (

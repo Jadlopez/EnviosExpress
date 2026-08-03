@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+.marker-green img {
+  filter: hue-rotate(95deg) saturate(180%);
+}
+
+.marker-red img {
+  filter: hue-rotate(-35deg) saturate(220%);
+}
