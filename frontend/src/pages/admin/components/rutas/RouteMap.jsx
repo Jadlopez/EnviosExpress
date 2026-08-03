@@ -162,6 +162,7 @@ export default function RouteMap({
         }}
       >
         <MapController center={DEFAULT_CENTER} puntos={puntosMapa} />
+
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
